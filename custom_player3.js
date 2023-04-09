@@ -192,30 +192,15 @@ $(document).ready(function () {
 			controls: newSettings.newControls,
 		};
 
-		if (newSettings.provider == 'html5') {
-			player.source = {
-				type: 'video',
-				sources: [
-					{
-						src: newSettings.videoId,
-						type: 'video/mp4',
-					},
-				],
-			};
-		} else if (
-			newSettings.provider == 'youtube' ||
-			newSettings.provider == 'vimeo'
-		) {
-			player.source = {
-				type: 'video',
-				sources: [
-					{
-						src: newSettings.videoId,
-						provider: newSettings.provider,
-					},
-				],
-			};
-		}
+    player.source = {
+      type: 'video',
+      sources: [
+        {
+          src: newSettings.videoId,
+          provider: 'vimeo',
+        },
+      ],
+    };
 
 		// Create a new object called playerOptions with only the necessary properties from newSettings
 		const playerOptions = {
