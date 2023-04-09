@@ -1,12 +1,3 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.querySelector("form");
-  form.addEventListener("submit", function (event) {
-    event.preventDefault(); // Prevent the default form submission
-
-    // Your custom code here
-    
-  });
-});
 $(document).ready(function () {
 	
 	  const form = document.querySelector("form");
