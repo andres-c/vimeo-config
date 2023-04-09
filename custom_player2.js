@@ -1,5 +1,5 @@
 $(document).ready(function () {
-  $('#plyr-settings-form').on('submit', function (event) {
+  $('form#plyr-settings-form').on('submit', function (event) {
     event.preventDefault(); // Prevent the default form submission
 
 // Initialize the Plyr player with default settings
