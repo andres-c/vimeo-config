@@ -1,7 +1,5 @@
 $(document).ready(function () {
-	const form = document.getElementById("plyr-settings-form");
-
-  form.addEventListener("submit", function (event) {
+  $('#plyr-settings-form').on('submit', function (event) {
     event.preventDefault(); // Prevent the default form submission
 
 // Initialize the Plyr player with default settings
@@ -262,5 +260,4 @@ $(document).ready(function () {
 		player.restart();
 	});    
   });
-	
 });
