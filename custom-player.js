@@ -1,5 +1,19 @@
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector("form");
+  form.addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    // Your custom code here
+    
+  });
+});
 $(document).ready(function () {
-	// Initialize the Plyr player with default settings
+	
+	  const form = document.querySelector("form");
+  form.addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent the default form submission
+
+// Initialize the Plyr player with default settings
 	if (localStorage.getItem('plyrSettings')) {
 		var setterss = JSON.parse(localStorage.getItem('plyrSettings'));
 		var controls = setterss.newControls;
@@ -255,5 +269,7 @@ $(document).ready(function () {
 		localStorage.setItem('plyrSettings', JSON.stringify(newSettings));
 		console.log('Player settings updated and saved!');
 		player.restart();
-	});
+	});    
+  });
+	
 });
