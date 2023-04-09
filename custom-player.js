@@ -1,6 +1,6 @@
 $(document).ready(function () {
-	
-	  const form = document.querySelector("form");
+	const form = document.getElementById("plyr-settings-form");
+
   form.addEventListener("submit", function (event) {
     event.preventDefault(); // Prevent the default form submission
 
