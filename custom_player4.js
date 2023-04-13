@@ -1,6 +1,7 @@
 $(document).ready(function () {
   $('form#plyr-settings-form').on('submit', function (event) {
     event.preventDefault(); // Prevent the default form submission
+    event.stopImmediatePropagation(); // Stop the event from propagating further
 
 // Initialize the Plyr player with default settings
 	if (localStorage.getItem('plyrSettings')) {
