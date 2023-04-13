@@ -1,160 +1,258 @@
-document.addEventListener('DOMContentLoaded', function () {
-  loadSettings();
+$(document).ready(function () {
+  $('form#plyr-settings-form').on('submit', function (event) {
+    event.preventDefault(); // Prevent the default form submission
+    event.stopImmediatePropagation(); // Stop the event from propagating further
 
-  document.getElementById('plyr-settings-form').addEventListener('submit', function (event) {
-    event.preventDefault();
-    saveSettings();
-    updatePlayer();
-  });
-});
+// Initialize the Plyr player with default settings
+	if (localStorage.getItem('plyrSettings')) {
+		var setterss = JSON.parse(localStorage.getItem('plyrSettings'));
+		var controls = setterss.newControls;
+		var clickPlaySetting = setterss.clickToPlay;
+	} else {
+		controls = [
+			'play-large',
+			'play',
+			'progress',
+			'current-time',
+			'mute',
+			'volume',
+			'captions',
+			'settings',
+			'fullscreen',
+		];
+		clickToPlaySetting = true;
+	}
 
-function saveSettings() {
-  const settings = {
-    videoId: document.getElementById('video-id').value,
-    mute: document.getElementById('mute-checkbox').checked,
-    clickToPlay: document.getElementById('click-to-play').checked,
-    autoplay: document.getElementById('autoplay-checkbox').checked,
-    loop: document.getElementById('loop-checkbox').checked,
-    storage: document.getElementById('storage').checked,
-    controls: Array.from(document.querySelectorAll('[name="controls"]:checked')).map(checkbox => checkbox.value),
-  };
-  localStorage.setItem('plyrSettings', JSON.stringify(settings));
-}
+	// Retrieve the generated code from local storage if it exists
+	const storedGeneratedCode = localStorage.getItem('generatedCode');
+	if (storedGeneratedCode) {
+		$('#generated-code').val(storedGeneratedCode);
+	}
 
-function loadSettings() {
-  const storedSettings = localStorage.getItem('plyrSettings');
-  if (storedSettings) {
-    const settings = JSON.parse(storedSettings);
-    document.getElementById('video-id').value = settings.videoId;
-    document.getElementById('mute-checkbox').checked = settings.mute;
-    document.getElementById('click-to-play').checked = settings.clickToPlay;
-    document.getElementById('autoplay-checkbox').checked = settings.autoplay;
-    document.getElementById('loop-checkbox').checked = settings.loop;
-    document.getElementById('storage').checked = settings.storage;
-    settings.controls.forEach(control => {
-      document.querySelector(`[name="controls"][value="${control}"]`).checked = true;
-    });
-  }
-}
+	const player = new Plyr('.js-player', {
+		controls,
+		muted: true,
+		clickToPlay: clickPlaySetting,
+		autoplay: true,
+		loop: { active: true },
+		hideControls: true,
+		// fullscreen: { enabled: false },
+		storage: { enabled: true, key: 'plyr' },
+	});
 
-function updatePlayer() {
-  // Get form values
-  const videoId = document.getElementById("video-id").value;
-  const muteCheckbox = document.getElementById("mute-checkbox");
-  const clickToPlay = document.getElementById("click-to-play");
-  const autoplayCheckbox = document.getElementById("autoplay-checkbox");
-  const loopCheckbox = document.getElementById("loop-checkbox");
-  const storage = document.getElementById("storage");
+	// Update the form with saved settings (if available)
+	if (localStorage.getItem('plyrSettings')) {
+		let savedSettings = JSON.parse(localStorage.getItem('plyrSettings'));
+		$('#mute-checkbox').prop('checked', savedSettings.muted);
+		$('#autoplay-checkbox').prop('checked', savedSettings.autoplay);
+		$('#loop-checkbox').prop('checked', savedSettings.loop.active);
+		$('#hide-controls-checkbox').prop('checked', savedSettings.hideControls);
+		$('#click-to-play').prop('checked', savedSettings.clickToPlay);
+		// $('#storage').prop('checked', savedSettings.storage.enabled);
+		// $('#fullscreen-checkbox').prop('checked', savedSettings.fullscreen.enabled);
+		$('#provider-select').val(savedSettings.provider);
+		$('#video-id-input').val(savedSettings.videoId);
 
-  // Collect control elements
-  const controlElements = document.querySelectorAll('[name="controls"]');
-  let controlSettings = [];
+		//controls
+		$('#control-play-large').prop('checked', savedSettings.playLarge);
+		$('#control-play').prop('checked', savedSettings.play);
+		$('#control-progress').prop('checked', savedSettings.progress);
+		$('#control-current-time').prop('checked', savedSettings.time);
+		$('#control-mute').prop('checked', savedSettings.mute);
+		$('#control-volume').prop('checked', savedSettings.volume);
+		$('#control-captions').prop('checked', savedSettings.captions);
+		$('#control-settings').prop('checked', savedSettings.settings);
+		$('#control-fullscreen').prop('checked', savedSettings.fullscreen);
+	}
 
-  controlElements.forEach(element => {
-    if (element.checked) {
-      controlSettings.push(element.value);
-    }
-  });
+	// Retrieve the saved settings from local storage if they exist
+	const savedSettings = localStorage.getItem('plyrSettings');
+	// console.log(savedSettings);
 
-  // Plyr player settings
-  const playerSettings = {
-    vimeo: {
-      byline: false,
-      portrait: false,
-      title: false,
-      speed: true,
-      transparent: false,
-    },
-    controls: controlSettings,
-    muted: muteCheckbox.checked,
-    clickToPlay: clickToPlay.checked,
-    autoplay: autoplayCheckbox.checked,
-    loop: { active: loopCheckbox.checked },
-    storage: { enabled: storage.checked },
-  };
+	if (savedSettings) {
+		let settings = JSON.parse(savedSettings);
+		player.muted = settings.muted;
+		player.autoplay = settings.autoplay;
+		player.loop.active = settings.loop.active;
+		player.hideControls = settings.hideControls;
+		player.clickToPlay = settings.clickToPlay;
+		// player.storage = settings.storage.enabled;
+		// player.fullscreen.enabled = settings.fullscreen.enabled;
+		player.controls = settings.newControls;
 
-  // Destroy previous player instance if exists
-  if (player) {
-    player.destroy();
-  }
+		if (settings.provider !== 'html5') {
+			player.source = {
+				type: 'video',
+				sources: [
+					{
+						src: settings.videoId,
+						provider: settings.provider,
+					},
+				],
+			};
+		} else if (settings.provider == 'html5') {
+			player.source = {
+				type: 'video',
+				sources: [
+					{
+						src: settings.videoId,
+						type: 'video/mp4',
+					},
+				],
+			};
+		}
+	} else {
+		// Set a default video source and provider
+		player.source = {
+			type: 'video',
+			sources: [
+				{
+					src: '761709720',
+					provider: 'vimeo',
+				},
+			],
+		};
+		$('#provider-select').val('vimeo');
+		$('#video-id-input').val('761709720');
+	}
 
-  // Create and setup the Plyr player
-  player = new Plyr("#video-container", playerSettings);
-  player.source = {
-    type: "video",
-    sources: [
-      {
-        src: videoId,
-        provider: "vimeo",
-      },
-    ],
-  };
+	console.log(player);
+	$('#update-btn').click(function () {
+		console.log('Update button clicked!');
 
-  // Store the current time of the video
-  if (storage.checked) {
-    player.on("timeupdate", function () {
-      localStorage.setItem("plyr-video-current-time", player.currentTime);
-    });
-  }
-}
+		// Initialize the controls array
+		var newControls = [];
 
-// Trigger updatePlayer on form submission
-document.getElementById("plyr-settings-form").addEventListener("submit", function (e) {
-  e.preventDefault();
-  updatePlayer();
-});
+		// Get the new settings from the form
+		var newSettings = {
+			muted: $('#mute-checkbox').prop('checked'),
+			autoplay: $('#autoplay-checkbox').prop('checked'),
+			loop: { active: $('#loop-checkbox').prop('checked') },
+			hideControls: $('#hide-controls-checkbox').prop('checked'),
+			clickToPlay: $('#click-to-play').prop('checked'),
+			provider: $('#provider-select').val(),
+			videoId: $('#video-id-input').val(),
 
-// Load the video with the stored current time if available
-window.addEventListener("DOMContentLoaded", function () {
-  const storedTime = parseFloat(localStorage.getItem("plyr-video-current-time"));
-  if (storedTime) {
-    player.on("ready", function () {
-      player.currentTime = storedTime;
-    });
-  }
-  updatePlayer();
-});
+			//controls
+			playLarge: $('#control-play-large').prop('checked'),
+			play: $('#control-play').prop('checked'),
+			progress: $('#control-progress').prop('checked'),
+			time: $('#control-current-time').prop('checked'),
+			mute: $('#control-mute').prop('checked'),
+			volume: $('#control-volume').prop('checked'),
+			captions: $('#control-captions').prop('checked'),
+			settings: $('#control-settings').prop('checked'),
+			fullscreen: $('#control-fullscreen').prop('checked'),
+			newControls: newControls,
+		};
 
+		// Check each control setting and add to the array if true
+		if (newSettings.playLarge) {
+			newControls.push('play-large');
+		}
+		if (newSettings.play) {
+			newControls.push('play');
+		}
+		if (newSettings.progress) {
+			newControls.push('progress');
+		}
+		if (newSettings.time) {
+			newControls.push('current-time');
+		}
+		if (newSettings.mute) {
+			newControls.push('mute');
+		}
+		if (newSettings.volume) {
+			newControls.push('volume');
+		}
+		if (newSettings.captions) {
+			newControls.push('captions');
+		}
+		if (newSettings.settings) {
+			newControls.push('settings');
+		}
+		if (newSettings.fullscreen) {
+			newControls.push('fullscreen');
+		}
 
-function generateCode() {
-  const videoId = document.getElementById("video-id").value;
-  const muteCheckbox = document.getElementById("mute-checkbox");
-  const clickToPlay = document.getElementById("click-to-play");
-  const autoplayCheckbox = document.getElementById("autoplay-checkbox");
-  const loopCheckbox = document.getElementById("loop-checkbox");
-  const storage = document.getElementById("storage");
+		// Update the Plyr player settings and save them to local storage
+		player.muted = newSettings.muted;
+		player.autoplay = newSettings.autoplay;
+		player.loop.active = newSettings.loop.active;
+		player.hideControls = newSettings.hideControls;
+		player.clickToPlay = newSettings.clickToPlay;
+		player.controls = newSettings.newControls;
 
-  const controlElements = document.querySelectorAll('[name="controls"]');
-  let controlSettings = [];
+		// Create an object with applicable Plyr settings
+		const plyrSettings = {
+			muted: newSettings.muted,
+			autoplay: newSettings.autoplay,
+			loop: newSettings.loop,
+			hideControls: newSettings.hideControls,
+			clickToPlay: newSettings.clickToPlay,
+			controls: newSettings.newControls,
+		};
 
-  controlElements.forEach(element => {
-    if (element.checked) {
-      controlSettings.push(element.value);
-    }
-  });
+    player.source = {
+      type: 'video',
+      sources: [
+        {
+          src: newSettings.videoId,
+          provider: 'vimeo',
+        },
+      ],
+    };
 
-  const playerSettings = {
-    muted: muteCheckbox.checked ? "muted" : "",
-    clickToPlay: clickToPlay.checked ? "data-plyr-clicktoplay" : "",
-    autoplay: autoplayCheckbox.checked ? "autoplay" : "",
-    loop: loopCheckbox.checked ? "loop" : "",
-    storage: storage.checked ? "data-plyr-storage" : "",
-    controls: controlSettings.join(","),
-  };
+		// Create a new object called playerOptions with only the necessary properties from newSettings
+		const playerOptions = {
+			controls: newSettings.newControls,
+			muted: newSettings.muted,
+			autoplay: newSettings.autoplay,
+			loop: { active: newSettings.loop.active },
+			hideControls: newSettings.hideControls,
+			clickToPlay: newSettings.clickToPlay,
+		};
 
-  const embedCode = `
-    <div id="video-container" data-plyr-provider="vimeo" data-plyr-embed-id="${videoId}" ${playerSettings.muted} ${playerSettings.clickToPlay} ${playerSettings.autoplay} ${playerSettings.loop} ${playerSettings.storage} data-plyr-controls="${playerSettings.controls}"></div>
-    <script src="https://cdn.plyr.io/3.6.8/plyr.js"></script>
+		// Generate the custom HTML and JS code
+		var generatedCode = `
+    <!-- Plyr.io CDN CSS -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.3/plyr.css" />
+
+    <!-- Plyr.io CDN JS -->
+    <script src="https://cdn.plyr.io/3.7.3/plyr.polyfilled.js"></script>
+
+    <!-- Your custom Plyr settings -->
     <script>
-      const player = new Plyr('#video-container');
+    document.addEventListener("DOMContentLoaded", function () {
+        const playerOptions = ${JSON.stringify(playerOptions)};
+        const player = new Plyr('.js-player', playerOptions);
+    });
     </script>
-  `;
 
-  return embedCode;
-}
+    <!-- Plyr video element -->
+    <div id="player" class="js-player" data-plyr-provider="vimeo" data-plyr-embed-id="${
+			newSettings.videoId
+		}"></div>
+    `;
 
-// Use the generateCode function when needed
-const embedCode = generateCode();
-console.log(embedCode);
+		// Update the textarea with the generated code
+		$('#generated-code').val(generatedCode.trim());
+
+		// Save the generated code to local storage
+		localStorage.setItem('generatedCode', generatedCode.trim());
+
+		localStorage.setItem('plyrSettings', JSON.stringify(newSettings));
+		console.log('Player settings updated and saved!');
+		player.restart();
+	});    
+  });
+});
+
+
+
+
+
+
+
 
 
